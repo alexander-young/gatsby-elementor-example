@@ -17,6 +17,13 @@ exports.createPages = ({ graphql, actions }) => {
             id
             slug
             uri
+            author {
+              avatar(size: 200) {
+                url
+              }
+              description
+              name
+            }
             elementorData
           }
         }
@@ -78,7 +85,7 @@ exports.onCreateNode = async ({
                       cache,
                       reporter,
                     })
-                    widget.settings.image.tag = generatedImage
+                    widget.settings.image.fluid = generatedImage
                   }
                 }
               }
@@ -93,46 +100,28 @@ exports.onCreateNode = async ({
 
             if (!fileNode || !fileNode.absolutePath) return
 
+
             let fluidResult = await fluid({
               file: fileNode,
               args: {
-                maxWidth: 768,
-                toFormat: 'WEBP'
-              },
-
-              reporter,
-              cache,
-            })
-
-            let fluidResultWebp = await fluid({
-              file: fileNode,
-              args: {
+                withWebp: true,
                 maxWidth: 768,
                 toFormat: 'WEBP',
-
+                tracedSVG: false,
               },
               reporter,
               cache,
-            })
+            });
 
-            if (!fluidResult) return
 
-            fluidResult.srcSetWebp = fluidResultWebp.srcSet
+            return fluidResult;
 
-            const imgOptions = {
-              fluid: fluidResult,
-              style: {
-                maxWidth: "100%"
-              },
-              critical: true,
-              // fadeIn: true,
-              imgStyle: {
-                opacity: 1
-              }
-            }
-            const ReactImgEl = React.createElement(Img.default, imgOptions, null)
+            // const imgOptions = {
+            //   fluid: fluidResult,
+            // }
+            // const ReactImgEl = React.createElement(Img.default, imgOptions, null)
 
-            return ReactDOMServer.renderToString(ReactImgEl)
+            // return ReactDOMServer.renderToString(ReactImgEl)
 
           }
 
